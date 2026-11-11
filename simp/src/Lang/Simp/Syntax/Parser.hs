@@ -1,4 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+{- HLINT ignore "Use <$>" -}
 module Lang.Simp.Syntax.Parser where
 
 
@@ -6,6 +7,7 @@ import Lang.Simp.Syntax.Parsec
 import Lang.Simp.Syntax.SrcLoc
 import Lang.Simp.Syntax.AST
 import Lang.Simp.Syntax.Lexer
+import Control.Monad.Error.Class (MonadError(catchError))
 
 
 -- | The `PEnv` datatype defines a parser environment
@@ -121,12 +123,15 @@ pWhile = do
 
 -- | the `pSpace` function parses / skips a space token
 pSpace :: Parser PEnv LToken 
-pSpace = undefined -- fixme
+pSpace = sat (\tok -> case tok of 
+    { WhiteSpace _ _ -> True 
+    ; _ -> False 
+    }) "expecting a + token but none is found."
 
 
 -- | the `pSpaces` function parses / skips zero or more space tokens
 pSpaces :: Parser PEnv [LToken]
-pSpaces = undefined -- fixme
+pSpaces = many pSpace
 
 -- Lab 1 Task 1.1 end 
 
@@ -135,12 +140,91 @@ pSpaces = undefined -- fixme
     Parsing an expression
     Note that 
     E ::= E Op E | X | C | (E) contains left recursion
--}
 
+    Eliminated:
+    T  ::= X | C | (E)
+    E  ::= T E'
+    E' ::= OP T E' | ε
+-}
 
 -- | the `pExp` function parses an expression
 pExp :: Parser PEnv Exp 
-pExp = undefined -- fixme
+pExp = do
+    first <- pTerm          -- 1. read the first term
+    rest  <- many pOpTerm  -- 2. read zero or more pairs
+    _     <- pSpaces         -- skip trailing spaces (pWhile needs this!)
+    return (foldl combine first rest)   -- 3. combine
+    where
+        combine acc (op, t) = op acc t
+
+
+pTerm :: Parser PEnv Exp
+pTerm = choice pVarTerm (choice pConstTerm pParenTerm)
+
+
+pVarTerm :: Parser PEnv Exp
+pVarTerm = do
+    x <- pVar           
+    return (VarExp x)   
+
+
+pConstTerm :: Parser PEnv Exp
+pConstTerm = do
+    c <- pConst
+    return (ConstExp c)
+
+
+pParenTerm :: Parser PEnv Exp
+pParenTerm = do
+    _ <- pLParen
+    e <- pExp
+    _ <- pRParen
+    return (ParenExp e)
+
+
+pOpTerm :: Parser PEnv (Exp -> Exp -> Exp, Exp)
+pOpTerm = attempt (do
+    _  <- pSpaces
+    op <- pOp      -- read an operator
+    _  <- pSpaces
+    t  <- pTerm      -- read a term
+    return (op, t))
+
+
+pOp :: Parser PEnv (Exp -> Exp -> Exp)
+pOp = choice pPlusOp (choice pMinusOp (choice pMultOp (choice pLThanOp pDEqualOp)))
+
+
+pPlusOp :: Parser PEnv (Exp -> Exp -> Exp)
+pPlusOp = do 
+    _ <- pPlus
+    return Plus
+
+
+pMinusOp :: Parser PEnv (Exp -> Exp -> Exp)
+pMinusOp = do
+    _ <- pMinus
+    return Minus
+
+
+pMultOp :: Parser PEnv (Exp -> Exp -> Exp)
+pMultOp = do
+    _ <- pMult
+    return Mult
+
+
+pLThanOp :: Parser PEnv (Exp -> Exp -> Exp)
+pLThanOp = do
+    _ <- pLThan
+    return LThan
+
+
+pDEqualOp :: Parser PEnv (Exp -> Exp -> Exp)
+pDEqualOp = do
+    _ <- pDEqual
+    return DEqual
+
+
 -- Lab 1 Task 1.2 end 
 
 
