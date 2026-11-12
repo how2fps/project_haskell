@@ -48,7 +48,7 @@ cogenExp (Minus e1 e2) = do
     (u1, d1) <- cogenExp e1      -- GE(e1) |- (up_e1, down_e1)
     (u2, d2) <- cogenExp e2      -- GE(e2) |- (up_e2, down_e2)
     t        <- newTemp          -- t is a fresh var
-    lbl      <- newLabel         -- l is a fresh label
+    lbl      <- newLabel         -- lbl is a fresh label
     return (t, d1 ++ d2 ++ [(lbl, IMinus t u1 u2)])
 
 
@@ -56,7 +56,7 @@ cogenExp (Mult e1 e2) = do
     (u1, d1) <- cogenExp e1      -- GE(e1) |- (up_e1, down_e1)
     (u2, d2) <- cogenExp e2      -- GE(e2) |- (up_e2, down_e2)
     t        <- newTemp          -- t is a fresh var
-    lbl      <- newLabel         -- l is a fresh label
+    lbl      <- newLabel         -- lbl is a fresh label
     return (t, d1 ++ d2 ++ [(lbl, IMult t u1 u2)])
 
 
@@ -64,7 +64,7 @@ cogenExp (DEqual e1 e2) = do
     (u1, d1) <- cogenExp e1      -- GE(e1) |- (up_e1, down_e1)
     (u2, d2) <- cogenExp e2      -- GE(e2) |- (up_e2, down_e2)
     t        <- newTemp          -- t is a fresh var
-    lbl      <- newLabel         -- l is a fresh label
+    lbl      <- newLabel         -- lbl is a fresh label
     return (t, d1 ++ d2 ++ [(lbl, IDEqual t u1 u2)])
 
 
@@ -72,7 +72,7 @@ cogenExp (LThan e1 e2)   = do
     (u1, d1) <- cogenExp e1      -- GE(e1) |- (up_e1, down_e1)
     (u2, d2) <- cogenExp e2      -- GE(e2) |- (up_e2, down_e2)
     t        <- newTemp          -- t is a fresh var
-    lbl      <- newLabel         -- l is a fresh label
+    lbl      <- newLabel         -- lbl is a fresh label
     return (t, d1 ++ d2 ++ [(lbl, ILThan t u1 u2)])
 
 
