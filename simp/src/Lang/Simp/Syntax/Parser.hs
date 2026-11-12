@@ -151,7 +151,7 @@ pSpaces = many pSpace
 pExp :: Parser PEnv Exp 
 pExp = do
     first <- pTerm          -- 1. read the first term
-    rest  <- many pOpTerm  -- 2. read zero or more pairs
+    rest  <- many pOpTerm   -- 2. read zero or more pairs
     _     <- pSpaces         -- skip trailing spaces (pWhile needs this!)
     return (foldl combine first rest)   -- 3. combine
     where
