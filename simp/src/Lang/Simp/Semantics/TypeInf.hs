@@ -95,8 +95,19 @@ instance Infer Stmt where
             (exTy, k) -> DS.insert (alphax, exTy) k
     infer (Ret x)           = DS.empty 
     -- Lab 2 Task 2.3
-    infer (While cond b)    = undefined -- fixme 
-    infer (If cond th el)   = undefined -- fixme
+    infer (While cond b)    = case inferExp cond of
+        (eT, tC) ->
+            let bC = infer b
+                loopC = DS.singleton (eT, MonoType BoolTy)
+            in loopC `DS.union` tC `DS.union` bC
+
+    infer (If cond th el)   = case inferExp cond of
+        (eT, tC) ->
+            let thC = infer th
+                condC = DS.singleton (eT, MonoType BoolTy)
+                elC = infer el
+            in tC `DS.union` thC `DS.union` condC `DS.union` elC
+
     -- Lab 2 Task 2.3 end 
 
 
@@ -145,7 +156,12 @@ class Unifiable a where
 -- | unify two extypes 
 -- Lab 2 Task 2.2 
 instance Unifiable (ExType,ExType) where
-    mgu (exTy1, exTy2) = Left ("error: unable to unify " ++ show exTy1 ++ " with " ++ show exTy2) -- fixme
+    mgu (eT1, eT2)
+        | eT1 == eT2 = Right Empty
+    mgu (TypeVar name, ty) = Right (singleton name ty)
+    mgu (ty, TypeVar name) = Right (singleton name ty)
+    mgu (exTy1, exTy2) = Left ("error: unable to unify " ++ show exTy1 ++ " with " ++ show exTy2)
+    
 
 
 -- | unifying a list of unifaibles
@@ -154,6 +170,8 @@ instance (Unifiable a, Substitutable a) => Unifiable [a] where
     mgu (x:xs)  = case mgu x of
         Left err -> Left err
         Right s1 -> case mgu (applySubst s1 xs) of
+            Left err -> Left err
+            Right s2 -> Right (compose s2 s1)
 -- Lab 2 Task 2.2 end
 
 
