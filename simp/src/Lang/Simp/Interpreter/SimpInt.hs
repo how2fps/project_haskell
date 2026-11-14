@@ -38,8 +38,11 @@ evalExp dlt (Plus e1 e2)    = do
     c2 <- evalExp dlt e2
     plusConst c1 c2
 -- Lab 2 Task 1.1 
-evalExp dlt (VarExp v)      = undefined -- fixme
-evalExp dlt (ParenExp e)    = undefined -- fixme
+evalExp dlt (VarExp v)      = case DM.lookup v dlt of
+    Just val -> Right val
+    Nothing -> Left "undefined variable"
+evalExp dlt (ParenExp e)    = evalExp dlt e
+
 -- Lab 2 Task 1.1 end
 
 
