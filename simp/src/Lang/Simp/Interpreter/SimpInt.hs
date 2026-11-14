@@ -55,7 +55,9 @@ class Evaluable a where
 instance Evaluable a => Evaluable [a] where
     eval dlt [] = Right dlt
     -- Lab 2 Task 1.2 
-    eval dlt (x:xs) = undefined -- fixme 
+    eval dlt (x:xs) = case eval dlt x of
+        Left err -> Left err
+        Right dlt2 -> eval dlt2 xs
     -- Lab 2 Task 1.2 end
 
 
@@ -67,13 +69,21 @@ instance Evaluable Stmt where
     eval dlt (If cond th el) = do
         c <- evalExp dlt cond
         case c of
-            IntConst _      -> Left "int expression found in the if condition position."
+            IntConst _      -> Left "int expression found in the while condition position."
             BoolConst b
                 | b         -> eval dlt th
                 | otherwise -> eval dlt el
     eval dlt (Ret x)        = Right dlt
     -- Lab 2 Task 1.2 
-    eval dlt (While cond s) = undefined -- fixme
+    eval dlt (While cond s) = do
+        c <- evalExp dlt cond
+        case c of
+            IntConst _      -> Left "int expression found in the if condition position."
+            BoolConst b
+                | b         -> case eval dlt s of
+                    Left err -> Left err
+                    Right dlt2 -> eval dlt2 (While cond s)
+                | otherwise -> Right dlt
     -- Lab 2 Task 1.2 end 
 
 

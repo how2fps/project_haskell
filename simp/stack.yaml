@@ -43,6 +43,9 @@ packages:
 #
 # extra-deps: []
 extra-deps:
+# Required on Windows because the overrides below prune these GHC boot packages.
+- Win32-2.14.2.2@sha256:534f6273a3a61162747111bb5cbdda7f04081971083c69ed4562eb34c744d845,5877
+- time-1.14@sha256:918455e07f347049c2169a43169aca77de7a2c97e33aca0b476aabcd8a79798d,6989
 - exceptions-0.10.8@sha256:c31fd9b35d36196cbb14ffa5fca4de49868fd39acfeddd601fb77e742554aa67,2892
 - filepath-1.4.300.2@sha256:345cbb1afe414a09e47737e4d14cbd51891a734e67c0ef3d77a1439518bb81e8,5900
 - unix-2.8.5.1@sha256:3f702a252a313a7bcb56e3908a14e7f9f1b40e41b7bdc8ae8a9605a1a8686f06,9808

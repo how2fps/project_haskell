@@ -60,7 +60,13 @@ class Substitutable a where
 -- | apply type subst to an extended type
 -- Lab 2 Task 2.1
 instance Substitutable ExType where
-    applySubst = undefined  -- fixme
+    applySubst Empty a = a
+    applySubst (RevComp (s, eT) rest) t = 
+        case applySubst rest t of
+            TypeVar v 
+                | v == s -> eT
+            other -> other
+
 -- Lab 2 Task 2.1 end
 
 instance (Substitutable a, Substitutable b) => Substitutable (a,b) where
@@ -145,7 +151,9 @@ instance Unifiable (ExType,ExType) where
 -- | unifying a list of unifaibles
 instance (Unifiable a, Substitutable a) => Unifiable [a] where
     mgu []      = Right Empty 
-    mgu (x:xs)  = undefined -- fixme 
+    mgu (x:xs)  = case mgu x of
+        Left err -> Left err
+        Right s1 -> case mgu (applySubst s1 xs) of
 -- Lab 2 Task 2.2 end
 
 
